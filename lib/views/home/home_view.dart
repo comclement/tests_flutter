@@ -1,27 +1,73 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tests_flutter/commons/constants.dart';
+import 'package:tests_flutter/providers/favorites_provider.dart';
 
-class HomeView extends StatefulWidget {
+class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
 
   @override
-  State<HomeView> createState() => _HomeViewState();
+  HomeViewState createState() => HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class HomeViewState extends ConsumerState<HomeView> {
+  late List<int> favorites;
+
   @override
   Widget build(BuildContext context) {
+    favorites = ref.watch(favoritesNotifierProvider);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         automaticallyImplyLeading: false,
         title: const Text("Home"),
-      ),
-      body: Center(
-        child: TextButton(
+        actions: [
+          TextButton.icon(
             onPressed: () => context.pushNamed(favoritesPath),
-            child: const Text("Go favorites")),
+            label: const Text("Favorites"),
+            icon: const Icon(Icons.favorite),
+          )
+        ],
+        centerTitle: false,
+      ),
+      body: _listItemHome(),
+    );
+  }
+
+  Widget _listItemHome() {
+    return ListView.builder(
+        padding: const EdgeInsets.symmetric(vertical: 15.0),
+        itemCount: 100,
+        cacheExtent: 20.0,
+        itemBuilder: (_, index) {
+          return _itemHome(index);
+        });
+  }
+
+  Widget _itemHome(int index) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: Colors.primaries[index % Colors.primaries.length],
+        ),
+        title: Text("Item $index", key: Key("text_$index")),
+        trailing: IconButton(
+            key: Key("add_icon_$index"),
+            onPressed: () {
+              !favorites.contains(index)
+                  ? ref
+                      .read(favoritesNotifierProvider.notifier)
+                      .addFavorite(index)
+                  : ref
+                      .read(favoritesNotifierProvider.notifier)
+                      .deleteFavorite(index);
+            },
+            icon: Icon(favorites.contains(index)
+                ? Icons.favorite
+                : Icons.favorite_border_outlined)),
       ),
     );
   }

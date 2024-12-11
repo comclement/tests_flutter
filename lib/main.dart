@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:tests_flutter/commons/theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tests_flutter/router/app_router.dart';
+import 'package:tests_flutter/services/shared_prefs_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SharedPrefsService.instance.init();
   runApp(const ProviderScope(child: MyApp()));
 }
 

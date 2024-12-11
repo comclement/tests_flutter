@@ -1,1 +1,0 @@
- /Users/0ruj/Documents/workspace_cgi/tests_flutter/.dart_tool/flutter_build/e27c61b0adf5e02296cffd5604f5ad74/native_assets.yaml: 

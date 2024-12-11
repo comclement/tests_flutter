@@ -56,8 +56,5 @@ ios/Runner/GoogleService-Info.plist
 lib/firebase_options.dart
 firebase.json
 
-#key.properties
-/android/key.properties
-
 # FVM Version Cache
 .fvm/
