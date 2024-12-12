@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tests_flutter/commons/constants.dart';
 import 'package:tests_flutter/providers/favorites_provider.dart';
+import 'package:tests_flutter/services/notifications_service.dart';
 
 class HomeView extends ConsumerStatefulWidget {
   const HomeView({super.key});
@@ -13,6 +14,12 @@ class HomeView extends ConsumerStatefulWidget {
 
 class HomeViewState extends ConsumerState<HomeView> {
   late List<int> favorites;
+
+  @override
+  void initState() {
+    super.initState();
+    NotificationsService.setupNotifications(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,15 +63,19 @@ class HomeViewState extends ConsumerState<HomeView> {
         title: Text("Item $index", key: Key("text_$index")),
         trailing: IconButton(
             key: Key("add_icon_$index"),
-            onPressed: () {
-              !favorites.contains(index)
-                  ? ref
-                      .read(favoritesNotifierProvider.notifier)
-                      .addFavorite(index)
-                  : ref
-                      .read(favoritesNotifierProvider.notifier)
-                      .deleteFavorite(index);
-            },
+            onPressed: !favorites.contains(index)
+                ? () {
+                    ref
+                        .read(favoritesNotifierProvider.notifier)
+                        .addFavorite(index);
+                    NotificationsService().sendPushMessage("add");
+                  }
+                : () {
+                    ref
+                        .read(favoritesNotifierProvider.notifier)
+                        .deleteFavorite(index);
+                    NotificationsService().sendPushMessage("remove");
+                  },
             icon: Icon(favorites.contains(index)
                 ? Icons.favorite
                 : Icons.favorite_border_outlined)),
