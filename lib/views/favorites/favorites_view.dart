@@ -32,14 +32,20 @@ class FavoritesViewState extends ConsumerState<FavoritesView> {
   }
 
   Widget _listItemFavorites() {
-    return ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 15.0),
-        itemCount: favorites.length,
-        cacheExtent: 20,
-        itemBuilder: (_, index) {
-          int itemIndex = favorites[index];
-          return _itemFavorite(itemIndex);
-        });
+    return favorites.isEmpty
+        ? const Center(
+            child: Text(
+            "Pas de favoris",
+            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18.0),
+          ))
+        : ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 15.0),
+            itemCount: favorites.length,
+            cacheExtent: 20,
+            itemBuilder: (_, index) {
+              int itemIndex = favorites[index];
+              return _itemFavorite(itemIndex);
+            });
   }
 
   Widget _itemFavorite(int index) {

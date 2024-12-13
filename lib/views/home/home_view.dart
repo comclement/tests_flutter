@@ -68,13 +68,15 @@ class HomeViewState extends ConsumerState<HomeView> {
                     ref
                         .read(favoritesNotifierProvider.notifier)
                         .addFavorite(index);
-                    NotificationsService().sendPushMessage("add");
+                    NotificationsService().sendPushNotification(
+                        title: "Test title", body: "Test body");
                   }
                 : () {
                     ref
                         .read(favoritesNotifierProvider.notifier)
                         .deleteFavorite(index);
-                    NotificationsService().sendPushMessage("remove");
+                    NotificationsService().sendPushNotification(
+                        title: "Test title", body: "Test body");
                   },
             icon: Icon(favorites.contains(index)
                 ? Icons.favorite

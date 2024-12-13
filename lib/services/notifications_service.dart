@@ -1,16 +1,18 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:googleapis_auth/auth_io.dart';
+import 'package:tests_flutter/services/env_service.dart';
 import 'package:tests_flutter/services/secure_storage_service.dart';
 import 'package:http/http.dart' as http;
 
 class NotificationsService {
   static final FlutterLocalNotificationsPlugin
       _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  int _messageCount = 0;
 
   // Fonction de gestion des messages en arrière-plan
   static Future<void> firebaseMessagingBackgroundHandler(
@@ -18,6 +20,7 @@ class NotificationsService {
     if (kDebugMode) {
       print("Handling a background message: ${message.messageId}");
     }
+    NotificationsService.showNotification(message);
   }
 
   static Future requestPermission() async {
@@ -89,20 +92,21 @@ class NotificationsService {
   static Future<void> showNotification(RemoteMessage message) async {
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
-      'high_importance_channel',
-      'High Importance Notifications',
-      channelDescription: 'This channel is used for important notifications.',
-      importance: Importance.high,
-      priority: Priority.high,
-    );
+            'high_importance_channel', 'High Importance Notifications',
+            channelDescription:
+                'This channel is used for important notifications.',
+            importance: Importance.high,
+            priority: Priority.high,
+            tag: "unique_tag_test");
 
-    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails();
+    const DarwinNotificationDetails iosDetails =
+        DarwinNotificationDetails(threadIdentifier: "unique_thread_test");
 
     const NotificationDetails notificationDetails =
         NotificationDetails(android: androidDetails, iOS: iosDetails);
 
     await _flutterLocalNotificationsPlugin.show(
-      message.hashCode,
+      1,
       message.notification?.title,
       message.notification?.body,
       notificationDetails,
@@ -116,6 +120,13 @@ class NotificationsService {
     // Demande des permissions pour iOS/Android
     await requestPermission();
     await getDevicePushToken();
+
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+      alert: false,
+      badge: false,
+      sound: false,
+    );
 
     // Gérer les messages en premier plan
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -131,7 +142,6 @@ class NotificationsService {
         if (kDebugMode) {
           print("Notification cliquée alors que l'app était fermée");
         }
-        NotificationsService.showNotification(message);
       }
     });
 
@@ -140,50 +150,60 @@ class NotificationsService {
       if (kDebugMode) {
         print("Notification cliquée alors que l'app était en arrière-plan");
       }
-      NotificationsService.showNotification(message);
     });
   }
 
-  //Create new notif push
-  String _constructFCMPayload(String? token, String type) {
-    _messageCount++;
-    return jsonEncode({
-      'token': token,
-      'data': {
-        'via': 'FlutterFire Cloud Messaging!!!',
-        'count': _messageCount.toString(),
-      },
-      'notification': {
-        'title': 'Hello FlutterFire!',
-        'body': 'This notification (#$_messageCount) was created via FCM!',
-      },
-    });
+  Future<String> generateAccessToken() async {
+    // Chargez le fichier JSON à l'aide de rootBundle
+    final serviceAccountCredentials = ServiceAccountCredentials.fromJson(
+      await rootBundle.loadString('assets/keys/service-account-key.json'),
+    );
+
+    final scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
+
+    final client =
+        await clientViaServiceAccount(serviceAccountCredentials, scopes);
+
+    return client.credentials.accessToken.data;
   }
 
   //Send new notif push
-  Future<void> sendPushMessage(String type) async {
-    final token = await SecureStorageService().getData("pushToken");
-    if (token == null) {
-      if (kDebugMode) {
-        print('Unable to send FCM message, no token exists.');
-      }
+  Future<void> sendPushNotification({
+    required String title,
+    required String body,
+  }) async {
+    final SecureStorageService secureStorageService = SecureStorageService();
+    final pushToken = await secureStorageService.getData("pushToken");
+    if (pushToken == null) {
       return;
     }
+    final accessToken = await generateAccessToken();
+    final url = Uri.parse(EnvService().getSendNotifsUrl);
 
-    try {
-      await http.post(
-        Uri.parse('https://api.rnfirebase.io/messaging/send'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: json.encode({
+        'message': {
+          'notification': {
+            'title': title,
+            'body': body,
+          },
+          'token': pushToken,
         },
-        body: _constructFCMPayload(token, type),
-      );
+      }),
+    );
+
+    if (response.statusCode == 200) {
       if (kDebugMode) {
-        print('FCM request for device sent!');
+        print('Notification envoyée avec succès.');
       }
-    } catch (e) {
+    } else {
       if (kDebugMode) {
-        print(e);
+        print('Erreur lors de l\'envoi : ${response.body}');
       }
     }
   }
