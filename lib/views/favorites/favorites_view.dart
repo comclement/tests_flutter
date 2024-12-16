@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tests_flutter/providers/favorites_provider.dart';
+import 'package:tests_flutter/services/notifications_service.dart';
 
 class FavoritesView extends ConsumerStatefulWidget {
   const FavoritesView({super.key});
@@ -58,9 +59,15 @@ class FavoritesViewState extends ConsumerState<FavoritesView> {
           title: Text("Item $index", key: Key("favorite_text_$index")),
           trailing: IconButton(
               key: Key("remove_icon_$index"),
-              onPressed: () => ref
-                  .read(favoritesNotifierProvider.notifier)
-                  .deleteFavorite(index),
+              onPressed: () {
+                ref
+                    .read(favoritesNotifierProvider.notifier)
+                    .deleteFavorite(index);
+                NotificationService().sendPushNotification(
+                    title: "Favorite removed",
+                    body: "Favorite item $index removed",
+                    persistent: false);
+              },
               icon: const Icon(Icons.close))),
     );
   }

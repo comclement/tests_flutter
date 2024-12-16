@@ -11,12 +11,13 @@ import 'package:tests_flutter/services/shared_prefs_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  FirebaseMessaging.onBackgroundMessage(
+      NotificationService.firebaseMessagingBackgroundHandler);
+
   await SharedPrefsService.instance.init();
   await EnvService().initEnvService();
-
-  FirebaseMessaging.onBackgroundMessage(
-      NotificationsService.firebaseMessagingBackgroundHandler);
 
   runApp(const ProviderScope(child: MyApp()));
 }

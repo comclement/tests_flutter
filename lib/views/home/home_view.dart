@@ -18,7 +18,7 @@ class HomeViewState extends ConsumerState<HomeView> {
   @override
   void initState() {
     super.initState();
-    NotificationsService.setupNotifications(context);
+    NotificationService().initialize(context);
   }
 
   @override
@@ -68,15 +68,19 @@ class HomeViewState extends ConsumerState<HomeView> {
                     ref
                         .read(favoritesNotifierProvider.notifier)
                         .addFavorite(index);
-                    NotificationsService().sendPushNotification(
-                        title: "Test title", body: "Test body");
+                    NotificationService().sendPushNotification(
+                        title: "New item add",
+                        body: "Item $index added in favorites",
+                        persistent: true);
                   }
                 : () {
                     ref
                         .read(favoritesNotifierProvider.notifier)
                         .deleteFavorite(index);
-                    NotificationsService().sendPushNotification(
-                        title: "Test title", body: "Test body");
+                    NotificationService().sendPushNotification(
+                        title: "Item removed",
+                        body: "Item $index removed in favorites",
+                        persistent: true);
                   },
             icon: Icon(favorites.contains(index)
                 ? Icons.favorite
