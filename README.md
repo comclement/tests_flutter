@@ -1,16 +1,9 @@
-# tests_flutter
+# Mettre en place send notifications push front
 
-A new Flutter project.
+## Pour utiliser l'api d'envoi des notifications push avec Firebase Messaging:
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Aller dans Firebase > Project settings > Cloud Messaging
+- Firebase Cloud Messaging API (V1) > Manage Service Accounts
+- Une fois dans le Google Cloud Console:
+  - IAM & Admin > Service Accounts > Click sur le compte admin (si pas de compte, en créer un)
+  - KEYS > ADD KEY > Télécharger la clé en format JSON et mettre ce fichier dans le projet (attention à bien le mettre dans le .gitignore)
