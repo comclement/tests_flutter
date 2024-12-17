@@ -6,11 +6,11 @@ final favoritesNotifierProvider =
         (ref) => FavoritesProvider());
 
 class FavoritesProvider extends StateNotifier<List<int>> {
+  SharedPrefsHelper helper = SharedPrefsHelper();
+
   FavoritesProvider() : super([]) {
     state = helper.getIntList("favorites");
   }
-
-  final helper = SharedPrefsHelper();
 
   void addFavorite(int itemIndex) async {
     if (!state.contains(itemIndex)) {

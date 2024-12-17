@@ -15,3 +15,4 @@
   - Pour une API avancée permettant de tester les applications Flutter exécutées sur des appareils réels ou des émulateurs, ajoutez flutter_driver : flutter pub add --dev --sdk=flutter flutter_driver
   - Pour les outils de test généraux, ajoutez test : flutter pub add --dev test
   - On peut ajouter le package mockito pour faire des tests avec du mock pour simuler le comportement de certaines parties: flutter pub add mockito
+  - On peut ajouter le package build_runner pour générer du code (par exemple du mock avec la combinaison mockito/build_runner): flutter pub add build_runner puis flutter pub run build_runner build (pour générer une seule fois le code) ou flutter pub run build_runner watch (pour regénerer automatiquement le code à chaque changement)
